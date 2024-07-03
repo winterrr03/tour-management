@@ -1,6 +1,7 @@
 import express, { Express } from "express";
 import dotenv from "dotenv";
 dotenv.config();
+import moment from "moment";
 import sequelize from "./config/database";
 import clientRoutes from "./routes/client/index.route";
 
@@ -13,6 +14,8 @@ app.set("views", "./views");
 app.set("view engine", "pug");
 
 app.use(express.static("public"));
+
+app.locals.moment = moment;
 
 clientRoutes(app);
 
