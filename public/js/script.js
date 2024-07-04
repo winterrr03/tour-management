@@ -170,7 +170,7 @@ const updateQuantityInCart = () => {
   if (listInputQuantity.length > 0) {
     listInputQuantity.forEach((input) => {
       input.addEventListener("change", () => {
-        const quantity = input.value;
+        const quantity = parseInt(input.value);
         const tourId = input.getAttribute("item-id");
 
         const cart = JSON.parse(localStorage.getItem("cart"));
@@ -189,3 +189,44 @@ const updateQuantityInCart = () => {
 // Hiển thị data ra giỏ hàng
 drawCart();
 // Hết Hiển thị data ra giỏ hàng
+
+// Đặt tour
+const formOrder = document.querySelector("[form-order]");
+if (formOrder) {
+  formOrder.addEventListener("submit", (event) => {
+    event.preventDefault();
+
+    const fullName = formOrder.fullName.value;
+    const phone = formOrder.phone.value;
+    const note = formOrder.note.value;
+
+    const cart = JSON.parse(localStorage.getItem("cart"));
+
+    const dataFinal = {
+      info: {
+        fullName: fullName,
+        phone: phone,
+        note: note,
+      },
+      cart: cart,
+    };
+
+    fetch("/order", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(dataFinal),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.code == 200) {
+          localStorage.setItem("cart", JSON.stringify([]));
+          window.location.href = `/order/success?orderCode=${data.orderCode}`;
+        } else {
+          alert("Đặt hàng không thành công!");
+        }
+      });
+  });
+}
+// Hết Đặt tour
