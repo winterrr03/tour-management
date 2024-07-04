@@ -26,6 +26,13 @@ const alertAddCartSusscess = () => {
 };
 // End alert-add-cart-susscess
 
+// Cart
+// Khởi tạo giỏ hàng
+const cart = localStorage.getItem("cart");
+if (!cart) {
+  localStorage.setItem("cart", JSON.stringify([]));
+}
+
 // Hiển thị số lượng vào mini cart
 const showMiniCart = () => {
   const miniCart = document.querySelector("[mini-cart]");
@@ -36,13 +43,6 @@ const showMiniCart = () => {
 };
 showMiniCart();
 // Hết Hiển thị số lượng vào mini cart
-
-// Cart
-// Khởi tạo giỏ hàng
-const cart = localStorage.getItem("cart");
-if (!cart) {
-  localStorage.setItem("cart", JSON.stringify([]));
-}
 
 // Thêm tour vào giỏ hàng
 const formAddToCart = document.querySelector("[form-add-to-cart]");
@@ -78,20 +78,21 @@ if (formAddToCart) {
 }
 // End Cart
 
-// Hiển thị data ra giỏ hàng
-const tableCart = document.querySelector("[table-cart]");
-if (tableCart) {
-  fetch("/cart/list-json", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: localStorage.getItem("cart"),
-  })
-    .then((res) => res.json())
-    .then((data) => {
-      const htmlArray = data.cart.map(
-        (item, index) => `
+// Hàm vẽ giỏ hàng
+const drawCart = () => {
+  const tableCart = document.querySelector("[table-cart]");
+  if (tableCart) {
+    fetch("/cart/list-json", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: localStorage.getItem("cart"),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        const htmlArray = data.cart.map(
+          (item, index) => `
         <tr>
             <td>${index + 1}</td>
             <td>
@@ -113,7 +114,7 @@ if (tableCart) {
                 name="quantity" 
                 value="${item.quantity}" 
                 min="1" 
-                item-id="${item.tourId}" 
+                item-id="${item.id}" 
                 style="width: 60px"
               >
             </td>
@@ -121,20 +122,46 @@ if (tableCart) {
             <td>
               <button 
                 class="btn btn-sm btn-danger" 
-                btn-delete="${item.tourId}"
+                btn-delete="${item.id}"
               >
                 Xóa
               </button>
             </td>
           </tr>
       `
-      );
+        );
 
-      const tbody = tableCart.querySelector("tbody");
-      tbody.innerHTML = htmlArray.join("");
+        const tbody = tableCart.querySelector("tbody");
+        tbody.innerHTML = htmlArray.join("");
 
-      const elementTotalPrice = document.querySelector("[total-price]");
-      elementTotalPrice.innerHTML = data.total.toLocaleString();
+        const elementTotalPrice = document.querySelector("[total-price]");
+        elementTotalPrice.innerHTML = data.total.toLocaleString();
+
+        deleteItemInCart();
+
+        showMiniCart();
+      });
+  }
+};
+
+// Xóa sản phẩm trong giỏ hàng
+const deleteItemInCart = () => {
+  const listBtnDelete = document.querySelectorAll("[btn-delete]");
+  if (listBtnDelete.length > 0) {
+    listBtnDelete.forEach((button) => {
+      button.addEventListener("click", () => {
+        const tourId = button.getAttribute("btn-delete");
+        const cart = JSON.parse(localStorage.getItem("cart"));
+        const newCart = cart.filter((item) => item.tourId != tourId);
+        localStorage.setItem("cart", JSON.stringify(newCart));
+
+        drawCart();
+      });
     });
-}
+  }
+};
+// Hết Xóa sản phẩm trong giỏ hàng
+
+// Hiển thị data ra giỏ hàng
+drawCart();
 // Hết Hiển thị data ra giỏ hàng
